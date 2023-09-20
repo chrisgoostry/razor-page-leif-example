@@ -11,6 +11,8 @@ env:
   REGISTRY: ghcr.io
   APP_IMAGE: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/razor-example
   BUILD_IMAGE: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/razor-example:buildimage
+  CONTENSIS_CLIENT_ID: aae765ad-c52c-4b62-b314-d32be4b46cb8
+  CONTENSIS_SHARED_SECRET: 40ba0b057cb24953bce2d4e64dd3c0c0-b8e8a488cfe34f4da50ab4184d367ee7-7a09087c5e6446fd8be89cc43fbc8726
 
 jobs:
   build-latest:
@@ -41,3 +43,18 @@ jobs:
           echo "image-uri=$APP_IMAGE_URI" >> $GITHUB_OUTPUT
           echo "Built Successfully"
         shell: bash
+  deploy:
+    name: Push block to Contensis
+    runs-on: ubuntu-latest
+    needs: build-latest
+    steps:
+      - name: Push block to Contensis
+        id: push-block
+        uses: contensis/block-push@v1
+        with:
+          block-id: dotnet-blog-record
+          alias: velocity-blocks
+          project-id: leif15
+          client-id: ${{ env.CONTENSIS_CLIENT_ID }}
+          shared-secret: ${{ env.CONTENSIS_SHARED_SECRET }}
+          image-uri: ${{ env.APP_IMAGE }}:build-${{ github.run_number }}
